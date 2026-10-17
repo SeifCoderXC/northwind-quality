@@ -1,0 +1,13 @@
+{
+  "name": "release-desk",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "NODE_OPTIONS='--experimental-strip-types' node --test test/*.test.js",
+    "start": "NODE_OPTIONS='--experimental-strip-types' node src/server.ts",
+    "directory": "NODE_OPTIONS='--experimental-strip-types' node src/local-directory.ts"
+  },
+  "dependencies": {
+    "playwright": "1.55.1"
+  }
+}

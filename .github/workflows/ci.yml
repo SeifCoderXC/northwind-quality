@@ -1,0 +1,57 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Refuse tracked secrets
+        run: |
+          if git ls-files | grep -E '(^|/)\.env$'; then
+            echo "A .env file is tracked."
+            exit 1
+          fi
+          if grep -RInE --exclude-dir=.git --exclude-dir=node_modules '-----BEGIN [A-Z ]*PRIVATE KEY-----|ATATT[A-Za-z0-9_-]{20,}' .; then
+            echo "A private key or tracker token is in the tree."
+            exit 1
+          fi
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+  image:
+    name: Image
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t northwind-quality:ci .
+      - name: Boot and check health
+        run: |
+          docker run -d --name northwind-quality -p 4321:4321 -e QUALITY_DEMO_PASSWORD=ci-desk-password northwind-quality:ci
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4321/api/health; then
+              echo
+              docker rm -f northwind-quality
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs northwind-quality
+          docker rm -f northwind-quality
+          exit 1
+      - name: Refuse the local password on a public bind
+        run: |
+          set +e
+          docker run --rm -e QUALITY_DEMO_PASSWORD=northwind-local northwind-quality:ci
+          code=$?
+          set -e
+          test "$code" -ne 0

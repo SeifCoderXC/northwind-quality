@@ -1,0 +1,85 @@
+{
+  "info": {
+    "name": "Northwind Quality",
+    "description": "Release control plane. Five rejected passwords inside 60 seconds return 429. The workspace audit list is the newest 40 rows. GET /api/audit?before=<id> loads the older page.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:4321" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/health" }
+    },
+    {
+      "name": "Sign in",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "content-type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"rahman\",\n  \"password\": \"northwind-local\"\n}"
+        },
+        "url": "{{baseUrl}}/api/login"
+      }
+    },
+    {
+      "name": "Workspace",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/workspace" }
+    },
+    {
+      "name": "Older audit",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/audit?before=1" }
+    },
+    {
+      "name": "File waiver",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "content-type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"journeyId\": \"guest-cart-total\",\n  \"reason\": \"Processor timeout is outside this change. Holding the canary for 24 hours.\",\n  \"hours\": 24\n}"
+        },
+        "url": "{{baseUrl}}/api/waivers"
+      }
+    },
+    {
+      "name": "Create captain",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "content-type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sam Rivera\",\n  \"username\": \"sam-r\",\n  \"password\": \"choose-a-password\"\n}"
+        },
+        "url": "{{baseUrl}}/api/register"
+      }
+    },
+    {
+      "name": "Issue director invite",
+      "request": { "method": "POST", "url": "{{baseUrl}}/api/invites" }
+    },
+    {
+      "name": "Register with director invite",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "content-type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Nora Hale\",\n  \"username\": \"nora\",\n  \"password\": \"choose-a-password\",\n  \"invite\": \"\"\n}"
+        },
+        "url": "{{baseUrl}}/api/register"
+      }
+    },
+    {
+      "name": "Approve waiver",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "content-type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"waiverId\": \"\"\n}" },
+        "url": "{{baseUrl}}/api/approvals"
+      }
+    }
+  ]
+}
