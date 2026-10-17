@@ -1,26 +1,18 @@
 # Northwind Quality
 
+[![CI](https://github.com/SeifCoderXC/northwind-quality/actions/workflows/ci.yml/badge.svg)](https://github.com/SeifCoderXC/northwind-quality/actions/workflows/ci.yml)
+
 Release control plane for Northwind. It decides whether release `2026.10.2` can leave a 5% canary in us-east-1. Cases live in SQLite. A failure blocks when it is critical, sev-1, or it covers at least 1 million weekly sessions. A sev-1 waiver stays pending until a different director approves it.
 
 ## Desk
 
-Release `2026.10.2` is blocked. The signed-in director in these pictures is L. Okonkwo.
-
-![Sign-in. A new account is a captain unless the form includes a director invite. Directory sign-in is offered when the issuer settings are present.](docs/images/sign-in.png)
+Release `2026.10.2` is blocked. The signed-in director in these pictures is L. Okonkwo. 23 journeys are scored. The catalog lists 14,203 cases, and those cases were not executed. Flake is 1/20, 5.000 percent, at the limit, so that gate is clear. Checkout, Search, and Payments are blocked. Identity is on watch because MFA challenge is flaky. The blocking journeys are Guest cart total, Typo tolerance, and Charge endpoint answers.
 
 ![Overview. Three journeys block 8.5 million weekly sessions. The us-east-1 canary is blocked and eu-central-1 stays held.](docs/images/overview.png)
 
-![Release. 23 journeys are scored. The catalog lists 14,203 cases and those cases were not executed. Flake is 1/20, 5.000 percent, at the limit, so that gate is clear.](docs/images/release.png)
-
-![Guest cart total. Expected $48.00 and the total showed $0.00. A sev-1 waiver stays pending until a different director approves it.](docs/images/guest-cart.png)
-
 ![Test plan. Each case has a severity, an expected result, and an actual result.](docs/images/plan.png)
 
-![Services. Checkout, Search, and Payments are blocked. Identity is on watch because MFA challenge is flaky.](docs/images/services.png)
-
-![Defects. NQ-1, NQ-2, and NQ-3 are the blocking journeys. Keys become links when Jira is configured.](docs/images/defects.png)
-
-High reach says `1 non-sev-1 failure over 1M sessions. 3 blocking journeys are over 1M sessions.` Typo tolerance is the failure outside sev-1. Guest cart total and Charge endpoint answers are the other two. Search critical pass stays 100% and the cell says that count excludes Typo tolerance.
+High reach says `1 non-sev-1 failure over 1M sessions. 3 blocking journeys are over 1M sessions.` Typo tolerance is the failure outside sev-1. Guest cart total and Charge endpoint answers are the other two. Guest cart total expected $48.00 and showed $0.00. Search critical pass stays 100% and the cell says that count excludes Typo tolerance. Defects lists those journeys, and the keys become links when Jira is configured.
 
 ## Core
 
@@ -31,7 +23,7 @@ High reach says `1 non-sev-1 failure over 1M sessions. 3 blocking journeys are o
 | REST + Postman | `/api/*` and `postman/Northwind-Quality.postman_collection.json` |
 | SQL | `sql/schema.sql`, SQLite at `data/quality.sqlite` |
 | Jira | Outbox rows for blocking cases. Live push turns on with env vars below. No TestRail |
-| GitHub Actions | `.github/workflows/ci.yml` runs the tests, then builds the image on main |
+| GitHub Actions | `.github/workflows/ci.yml` runs the tests, then builds and checks the image |
 | Plan | Plan page: case, severity, expected, actual |
 
 ## Accounts
@@ -47,8 +39,6 @@ Directory sign-in is optional. Copy `.env.example` to `.env` and set `OIDC_CLIEN
 - `OIDC_DIRECTOR_GROUP`
 
 The sign-in page offers **Sign in with your directory** when those settings are present. The directory asks for its own account before it sends the browser back. A person in `northwind-directors` becomes a director. Anyone else with a group list becomes a captain. A missing group list is refused. The directory password is not stored on the desk, and the directory account cannot sign in as rahman or okonkwo. If the directory process is stopped, the desk stays on the sign-in page and does not open a session. The client secret stays in `.env`.
-
-![Directory. Sign-in stops here until the local directory recognizes the account. The account password is in the collapsed note.](docs/images/directory.png)
 
 | Username | Directory name | Desk role | Password |
 |---|---|---|---|
@@ -101,7 +91,7 @@ The image serves the control plane. It does not download a browser. The checkout
 `.github/workflows/ci.yml` is the pipeline.
 
 - **Test** runs on every push and pull request: `npm ci`, Chromium, and `npm test`. The job fails if `.env` is tracked or a private key is in the tree.
-- **Image** runs on a push to `main` after the tests pass. It builds the Docker image, checks `GET /api/health`, and checks that the local password cannot bind in public.
+- **Image** runs after the tests pass, on every push and pull request. It builds the Docker image, checks `GET /api/health`, and checks that the local password cannot bind in public.
 
 The pipeline does not deploy to a host and does not publish the image to a registry.
 
